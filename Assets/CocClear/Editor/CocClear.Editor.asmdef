@@ -1,0 +1,19 @@
+{
+    "name": "CocClear.Editor",
+    "rootNamespace": "CocClear.EditorTools",
+    "references": [
+        "CocClear.Core",
+        "CocClear.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
