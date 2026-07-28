@@ -18,8 +18,17 @@ namespace CocClear.Runtime
             Settings,
         }
 
+        private enum ArchiveTab
+        {
+            Records,
+            Illustrations,
+        }
+
         private NarrativeSequence sequence;
         private ScreenMode screenMode;
+        private ArchiveTab archiveTab;
+        private Vector2 archiveScrollPosition;
+        private Texture2D[] galleryImages;
         private GUIStyle titleStyle;
         private GUIStyle subtitleStyle;
         private GUIStyle speakerStyle;
@@ -30,6 +39,7 @@ namespace CocClear.Runtime
         private void Awake()
         {
             sequence = new NarrativeSequence(PrologueScript.Create());
+            galleryImages = Resources.LoadAll<Texture2D>("Archive");
             screenMode = ScreenMode.Title;
         }
 
@@ -126,23 +136,84 @@ namespace CocClear.Runtime
 
         private void DrawArchiveScreen()
         {
-            DrawPanelBackground("보관함", "저장된 진행과 프롤로그 기록을 확인할 수 있습니다.");
+            DrawPanelBackground("보관함", "모든 시나리오 기록과 전달받은 일러스트를 전시합니다.");
 
             var width = Mathf.Min(Screen.width - 96f, 900f);
             var left = (Screen.width - width) * 0.5f;
-            var top = 168f;
-            var savedText = HasSave
-                ? $"저장된 진행: 프롤로그 {PlayerPrefs.GetInt(SaveKey) + 1}번째 대사"
-                : "저장된 진행이 없습니다. 게임 화면에서 저장을 눌러 기록하세요.";
-            GUI.Label(new Rect(left, top, width, 32f), savedText, bodyStyle);
+            if (GUI.Button(new Rect(left, 177f, 130f, 34f), "시나리오 기록", menuButtonStyle)) archiveTab = ArchiveTab.Records;
+            if (GUI.Button(new Rect(left + 140f, 177f, 130f, 34f), "일러스트", menuButtonStyle)) archiveTab = ArchiveTab.Illustrations;
 
-            var lines = PrologueScript.Create();
-            for (var i = 0; i < lines.Length; i++)
+            if (archiveTab == ArchiveTab.Records)
             {
-                GUI.Label(new Rect(left, top + 48f + (i * 34f), width, 30f), $"{i + 1}. {lines[i].Speaker}  |  {lines[i].Text}", speakerStyle);
+                DrawArchiveRecords(left, width);
+            }
+            else
+            {
+                DrawArchiveGallery(left, width);
             }
 
             if (GUI.Button(new Rect(left, Screen.height - 78f, 140f, 36f), "타이틀로", menuButtonStyle)) screenMode = ScreenMode.Title;
+        }
+
+        private void DrawArchiveRecords(float left, float width)
+        {
+            var savedText = HasSave
+                ? $"저장된 진행: 프롤로그 {PlayerPrefs.GetInt(SaveKey) + 1}번째 대사"
+                : "저장된 진행이 없습니다. 게임 화면에서 저장을 눌러 기록하세요.";
+            GUI.Label(new Rect(left, 220f, width, 30f), savedText, bodyStyle);
+
+            var records = ScenarioArchive.CreateAll();
+            var viewRect = new Rect(left, 258f, width, Screen.height - 356f);
+            var contentHeight = 54f + (records.Length * 58f);
+            archiveScrollPosition = GUI.BeginScrollView(viewRect, archiveScrollPosition, new Rect(0f, 0f, width - 24f, contentHeight));
+            var y = 0f;
+            var previousEpisode = string.Empty;
+            for (var i = 0; i < records.Length; i++)
+            {
+                var record = records[i];
+                if (previousEpisode != record.EpisodeTitle)
+                {
+                    GUI.Label(new Rect(12f, y, width - 56f, 28f), record.EpisodeTitle, subtitleStyle);
+                    y += 32f;
+                    previousEpisode = record.EpisodeTitle;
+                }
+
+                DrawRect(new Rect(8f, y, width - 48f, 48f), new Color(0.06f, 0.11f, 0.2f, 0.72f));
+                GUI.Label(new Rect(20f, y + 5f, width - 72f, 19f), $"{record.Order}. {record.Line.Speaker}", speakerStyle);
+                GUI.Label(new Rect(20f, y + 25f, width - 72f, 21f), record.Line.Text, speakerStyle);
+                y += 56f;
+            }
+
+            GUI.EndScrollView();
+        }
+
+        private void DrawArchiveGallery(float left, float width)
+        {
+            GUI.Label(new Rect(left, 220f, width, 30f), $"전시된 일러스트: {galleryImages.Length}장", bodyStyle);
+            if (galleryImages.Length == 0)
+            {
+                GUI.Label(new Rect(left, 260f, width, 58f), "아직 전시할 일러스트가 없습니다. 다음에 전달해 주는 일러스트부터 전부 보관함에 등록합니다.", subtitleStyle);
+                return;
+            }
+
+            const float cellWidth = 200f;
+            const float cellHeight = 168f;
+            var columns = Mathf.Max(1, Mathf.FloorToInt((width - 20f) / cellWidth));
+            var rows = Mathf.CeilToInt(galleryImages.Length / (float)columns);
+            var viewRect = new Rect(left, 258f, width, Screen.height - 356f);
+            archiveScrollPosition = GUI.BeginScrollView(viewRect, archiveScrollPosition, new Rect(0f, 0f, width - 24f, rows * cellHeight));
+            for (var i = 0; i < galleryImages.Length; i++)
+            {
+                var column = i % columns;
+                var row = i / columns;
+                var x = 8f + (column * cellWidth);
+                var y = row * cellHeight;
+                DrawRect(new Rect(x, y, cellWidth - 12f, cellHeight - 12f), new Color(0.06f, 0.11f, 0.2f, 0.82f));
+                GUI.DrawTexture(new Rect(x + 8f, y + 8f, cellWidth - 28f, 112f), galleryImages[i], ScaleMode.ScaleToFit, true);
+                GUI.Label(new Rect(x + 8f, y + 126f, cellWidth - 28f, 26f), galleryImages[i].name, speakerStyle);
+            }
+
+            GUI.EndScrollView();
         }
 
         private void DrawSettingsScreen()

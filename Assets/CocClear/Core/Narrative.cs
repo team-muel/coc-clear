@@ -82,4 +82,35 @@ namespace CocClear.Core
             };
         }
     }
+
+    /// <summary>One entry visible in the archive. Add every new episode to ScenarioArchive.CreateAll.</summary>
+    public readonly struct ArchiveRecord
+    {
+        public ArchiveRecord(string episodeTitle, int order, NarrativeLine line)
+        {
+            EpisodeTitle = episodeTitle ?? throw new ArgumentNullException(nameof(episodeTitle));
+            Order = order;
+            Line = line;
+        }
+
+        public string EpisodeTitle { get; }
+        public int Order { get; }
+        public NarrativeLine Line { get; }
+    }
+
+    /// <summary>Single source for every scenario record shown in the in-game archive.</summary>
+    public static class ScenarioArchive
+    {
+        public static ArchiveRecord[] CreateAll()
+        {
+            var prologue = PrologueScript.Create();
+            var records = new ArchiveRecord[prologue.Length];
+            for (var i = 0; i < prologue.Length; i++)
+            {
+                records[i] = new ArchiveRecord("프롤로그 · 잔향의 도시", i + 1, prologue[i]);
+            }
+
+            return records;
+        }
+    }
 }
