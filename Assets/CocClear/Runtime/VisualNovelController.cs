@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CocClear.Runtime
 {
-    /// <summary>Asset-free title and visual-novel shell. Final illustration can replace DrawTitleBackground later.</summary>
+    /// <summary>Title and visual-novel shell. The supplied title art is loaded from Resources/Archive.</summary>
     public sealed class VisualNovelController : MonoBehaviour
     {
         private const string SaveKey = "CocClear.VisualNovel.PrologueIndex";
@@ -33,6 +33,7 @@ namespace CocClear.Runtime
         private ArchiveTab archiveTab;
         private Vector2 archiveScrollPosition;
         private Texture2D[] galleryImages;
+        private Texture2D titleBackground;
         private GUIStyle titleStyle;
         private GUIStyle subtitleStyle;
         private GUIStyle speakerStyle;
@@ -44,6 +45,7 @@ namespace CocClear.Runtime
         {
             sequence = new NarrativeSequence(PrologueScript.Create());
             galleryImages = Resources.LoadAll<Texture2D>("Archive");
+            titleBackground = Resources.Load<Texture2D>("Archive/TitleBackground");
             screenMode = ScreenMode.Title;
         }
 
@@ -262,7 +264,7 @@ namespace CocClear.Runtime
 
         private void DrawPanelBackground(string heading, string description)
         {
-            DrawTitleBackground();
+            DrawGameBackground();
             var width = Mathf.Min(Screen.width - 64f, 980f);
             var left = (Screen.width - width) * 0.5f;
             DrawRect(new Rect(left - 28f, 52f, width + 56f, Screen.height - 104f), new Color(0.02f, 0.035f, 0.075f, 0.94f));
@@ -334,6 +336,19 @@ namespace CocClear.Runtime
 
         private void DrawTitleBackground()
         {
+            if (titleBackground != null)
+            {
+                GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), titleBackground, ScaleMode.ScaleAndCrop, true);
+                DrawRect(new Rect(0f, 0f, Screen.width, Screen.height), new Color(0.015f, 0.025f, 0.05f, 0.28f));
+                DrawRect(new Rect(0f, Screen.height * 0.70f, Screen.width, Screen.height * 0.30f), new Color(0.005f, 0.01f, 0.025f, 0.36f));
+                return;
+            }
+
+            DrawPlaceholderCityBackground();
+        }
+
+        private void DrawPlaceholderCityBackground()
+        {
             DrawRect(new Rect(0f, 0f, Screen.width, Screen.height), new Color(0.025f, 0.055f, 0.12f));
             DrawRect(new Rect(0f, Screen.height * 0.57f, Screen.width, Screen.height * 0.43f), new Color(0.015f, 0.025f, 0.06f));
             DrawRect(new Rect(Screen.width * 0.53f, Screen.height * 0.18f, Screen.width * 0.17f, Screen.height * 0.53f), new Color(0.045f, 0.085f, 0.16f));
@@ -355,7 +370,7 @@ namespace CocClear.Runtime
 
         private void DrawGameBackground()
         {
-            DrawTitleBackground();
+            DrawPlaceholderCityBackground();
             DrawRect(new Rect(0f, 0f, Screen.width, Screen.height), new Color(0.01f, 0.02f, 0.05f, 0.56f));
         }
 

@@ -5,7 +5,7 @@ An asset that is not listed here does not get committed.
 
 | Asset | Source | License | Modifications | Gotchas |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| `Assets/CocClear/Resources/Archive/TitleBackground.png` | User-provided file: `알아서 쓸거임.png` | Permission granted by project owner for this game | Renamed for Unity resource loading; used as title background and archive gallery entry | Do not redistribute or use outside this project without the owner's direction |
 
 ## Rules
 
