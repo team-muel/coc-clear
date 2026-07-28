@@ -1,6 +1,6 @@
 # CoC-Clear
 
-Unity game project. Two people. Unity **6000.3.19f1**.
+Unity game project. Two people. Unity **6000.5.3f1**.
 
 > **Design lives in the Obsidian vault, not here.** The vault zip (`CoC-Clear` folder) is the design source of truth: pitfalls playbook, process, collaboration protocol, Codex onboarding. Read `65 Engineering Pitfalls Playbook.md` before your first PR — every entry in it was paid for.
 

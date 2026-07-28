@@ -4,6 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/CocClear/Scenes/VisualNovel.unity
+    guid: 7b3cb29493078d74a8081157ec6873eb
   m_configObjects: {}
-  m_UseUCBPForAssetBundles: 0
