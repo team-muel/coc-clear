@@ -8,12 +8,15 @@ namespace CocClear.Runtime
     {
         private const string SaveKey = "CocClear.VisualNovel.PrologueIndex";
         private const string DialogueSizeKey = "CocClear.VisualNovel.DialogueSize";
+        private const string DialogueOpacityKey = "CocClear.VisualNovel.DialogueOpacity";
         private const int DefaultDialogueSize = 26;
+        private const float DefaultDialogueOpacity = 0.93f;
 
         private enum ScreenMode
         {
             Title,
             Game,
+            GameMenu,
             Archive,
             Settings,
         }
@@ -26,6 +29,7 @@ namespace CocClear.Runtime
 
         private NarrativeSequence sequence;
         private ScreenMode screenMode;
+        private ScreenMode settingsReturnMode;
         private ArchiveTab archiveTab;
         private Vector2 archiveScrollPosition;
         private Texture2D[] galleryImages;
@@ -45,6 +49,18 @@ namespace CocClear.Runtime
 
         private void Update()
         {
+            if (screenMode == ScreenMode.GameMenu && Input.GetKeyDown(KeyCode.Escape))
+            {
+                screenMode = ScreenMode.Game;
+                return;
+            }
+
+            if (screenMode == ScreenMode.Settings && Input.GetKeyDown(KeyCode.Escape))
+            {
+                screenMode = settingsReturnMode;
+                return;
+            }
+
             if (screenMode != ScreenMode.Game)
             {
                 return;
@@ -54,13 +70,9 @@ namespace CocClear.Runtime
             {
                 Next();
             }
-            else if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                Previous();
-            }
             else if (Input.GetKeyDown(KeyCode.Escape))
             {
-                screenMode = ScreenMode.Title;
+                screenMode = ScreenMode.GameMenu;
             }
         }
 
@@ -75,6 +87,9 @@ namespace CocClear.Runtime
                     break;
                 case ScreenMode.Game:
                     DrawGameScreen();
+                    break;
+                case ScreenMode.GameMenu:
+                    DrawGameMenu();
                     break;
                 case ScreenMode.Archive:
                     DrawArchiveScreen();
@@ -99,7 +114,7 @@ namespace CocClear.Runtime
             if (DrawMenuButton("처음부터", left, menuTop)) StartNewGame();
             if (DrawMenuButton("이어하기", left, menuTop + 52f, HasSave)) ContinueGame();
             if (DrawMenuButton("보관함", left, menuTop + 104f)) screenMode = ScreenMode.Archive;
-            if (DrawMenuButton("설정", left, menuTop + 156f)) screenMode = ScreenMode.Settings;
+            if (DrawMenuButton("설정", left, menuTop + 156f)) OpenSettings(ScreenMode.Title);
 
             var saveMessage = HasSave
                 ? $"이어하기: 프롤로그 {PlayerPrefs.GetInt(SaveKey) + 1}번째 대사"
@@ -118,20 +133,26 @@ namespace CocClear.Runtime
 
             GUI.Label(new Rect(left, 28f, width, 42f), "CoC-Clear", titleStyle);
             GUI.Label(new Rect(left, 74f, width, 28f), "프롤로그 · 잔향의 도시", speakerStyle);
-            DrawRect(new Rect(left, top, width, dialogueHeight), new Color(0.025f, 0.04f, 0.08f, 0.93f));
+            DrawRect(new Rect(left, top, width, dialogueHeight), new Color(0.025f, 0.04f, 0.08f, PlayerPrefs.GetFloat(DialogueOpacityKey, DefaultDialogueOpacity)));
+            if (GUI.Button(new Rect(left + 28f, top + 62f, width - 56f, dialogueHeight - 132f), GUIContent.none, GUIStyle.none)) Next();
             GUI.Label(new Rect(left + 28f, top + 22f, width - 56f, 34f), sequence.Current.Speaker, speakerStyle);
             dialogueStyle.fontSize = PlayerPrefs.GetInt(DialogueSizeKey, DefaultDialogueSize);
             GUI.Label(new Rect(left + 28f, top + 68f, width - 56f, dialogueHeight - 135f), sequence.Current.Text, dialogueStyle);
 
-            var buttonY = top + dialogueHeight - 50f;
-            if (GUI.Button(new Rect(left + 28f, buttonY, 96f, 30f), "이전", menuButtonStyle)) Previous();
-            if (GUI.Button(new Rect(left + 132f, buttonY, 96f, 30f), "다음", menuButtonStyle)) Next();
-            if (GUI.Button(new Rect(left + width - 390f, buttonY, 82f, 30f), "저장", menuButtonStyle)) Save();
-            if (GUI.Button(new Rect(left + width - 300f, buttonY, 82f, 30f), "불러오기", menuButtonStyle)) Load();
-            if (GUI.Button(new Rect(left + width - 210f, buttonY, 82f, 30f), "설정", menuButtonStyle)) screenMode = ScreenMode.Settings;
-            if (GUI.Button(new Rect(left + width - 120f, buttonY, 92f, 30f), "타이틀", menuButtonStyle)) screenMode = ScreenMode.Title;
+            if (GUI.Button(new Rect(Screen.width - 126f, 28f, 98f, 34f), "설정", menuButtonStyle)) screenMode = ScreenMode.GameMenu;
+            if (GUI.Button(new Rect(left + width - 110f, top + dialogueHeight - 50f, 82f, 30f), "저장", menuButtonStyle)) Save();
 
-            GUI.Label(new Rect(left, top - 28f, width, 22f), $"{sequence.CurrentIndex + 1} / {sequence.Count}   Space 또는 Enter로 다음 · Esc로 타이틀", speakerStyle);
+            GUI.Label(new Rect(left, top - 28f, width, 22f), $"{sequence.CurrentIndex + 1} / {sequence.Count}   대사를 클릭하거나 Space / Enter로 다음", speakerStyle);
+        }
+
+        private void DrawGameMenu()
+        {
+            DrawGameBackground();
+            var panel = new Rect(Screen.width - 260f, 24f, 232f, 180f);
+            DrawRect(panel, new Color(0.02f, 0.04f, 0.09f, 0.96f));
+            GUI.Label(new Rect(panel.x + 18f, panel.y + 14f, panel.width - 36f, 28f), "설정", subtitleStyle);
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 58f, panel.width - 36f, 38f), "게임 설정", menuButtonStyle)) OpenSettings(ScreenMode.GameMenu);
+            if (GUI.Button(new Rect(panel.x + 18f, panel.y + 108f, panel.width - 36f, 38f), "나가기", menuButtonStyle)) screenMode = ScreenMode.Title;
         }
 
         private void DrawArchiveScreen()
@@ -218,7 +239,7 @@ namespace CocClear.Runtime
 
         private void DrawSettingsScreen()
         {
-            DrawPanelBackground("설정", "임시 설정입니다. 정식 옵션 메뉴로 교체할 수 있습니다.");
+            DrawPanelBackground("게임 설정", "변경 사항은 즉시 게임 화면에 반영되고 다음 실행에도 유지됩니다.");
 
             var width = Mathf.Min(Screen.width - 96f, 900f);
             var left = (Screen.width - width) * 0.5f;
@@ -229,9 +250,14 @@ namespace CocClear.Runtime
             if (GUI.Button(new Rect(left + 140f, top + 40f, 42f, 34f), "−", menuButtonStyle)) SetDialogueSize(fontSize - 2);
             if (GUI.Button(new Rect(left + 190f, top + 40f, 42f, 34f), "+", menuButtonStyle)) SetDialogueSize(fontSize + 2);
             if (GUI.Button(new Rect(left + 246f, top + 40f, 106f, 34f), "기본값", menuButtonStyle)) SetDialogueSize(DefaultDialogueSize);
-            GUI.Label(new Rect(left, top + 102f, width, 28f), "변경한 글자 크기는 게임을 다시 실행해도 유지됩니다.", speakerStyle);
+            GUI.Label(new Rect(left, top + 102f, width, 32f), "대사창 투명도", bodyStyle);
+            var opacity = PlayerPrefs.GetFloat(DialogueOpacityKey, DefaultDialogueOpacity);
+            var updatedOpacity = GUI.HorizontalSlider(new Rect(left, top + 146f, 260f, 22f), opacity, 0.55f, 1f);
+            if (!Mathf.Approximately(opacity, updatedOpacity)) SetDialogueOpacity(updatedOpacity);
+            GUI.Label(new Rect(left + 276f, top + 140f, 100f, 28f), $"{Mathf.RoundToInt(updatedOpacity * 100f)}%", speakerStyle);
+            GUI.Label(new Rect(left, top + 190f, width, 28f), "대사 진행은 클릭 또는 Space / Enter로 할 수 있습니다.", speakerStyle);
 
-            if (GUI.Button(new Rect(left, Screen.height - 78f, 140f, 36f), "타이틀로", menuButtonStyle)) screenMode = ScreenMode.Title;
+            if (GUI.Button(new Rect(left, Screen.height - 78f, 140f, 36f), "돌아가기", menuButtonStyle)) screenMode = settingsReturnMode;
         }
 
         private void DrawPanelBackground(string heading, string description)
@@ -272,11 +298,6 @@ namespace CocClear.Runtime
             sequence.MoveNext();
         }
 
-        private void Previous()
-        {
-            sequence.MovePrevious();
-        }
-
         private void Save()
         {
             PlayerPrefs.SetInt(SaveKey, sequence.CurrentIndex);
@@ -295,6 +316,18 @@ namespace CocClear.Runtime
         {
             PlayerPrefs.SetInt(DialogueSizeKey, Mathf.Clamp(size, 18, 38));
             PlayerPrefs.Save();
+        }
+
+        private void SetDialogueOpacity(float opacity)
+        {
+            PlayerPrefs.SetFloat(DialogueOpacityKey, Mathf.Clamp(opacity, 0.55f, 1f));
+            PlayerPrefs.Save();
+        }
+
+        private void OpenSettings(ScreenMode returnMode)
+        {
+            settingsReturnMode = returnMode;
+            screenMode = ScreenMode.Settings;
         }
 
         private bool HasSave => PlayerPrefs.HasKey(SaveKey);
