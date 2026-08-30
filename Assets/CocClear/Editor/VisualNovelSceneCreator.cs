@@ -24,6 +24,8 @@ namespace CocClear.Editor
 
         public static void BuildWindows()
         {
+            PlayerSettings.resizableWindow = true;
+
             if (!File.Exists(ScenePath))
             {
                 CreateScene();
