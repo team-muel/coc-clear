@@ -7,10 +7,12 @@ $env:ALLUSERSPROFILE = 'C:\ProgramData'
 $env:ProgramData     = 'C:\ProgramData'
 $env:TMP             = $env:TEMP
 
-$editor = 'C:\Program Files\Unity\Hub\Editor\6000.3.19f1\Editor\Unity.exe'
 $proj   = Split-Path -Parent $PSScriptRoot
+$versionFile = Join-Path $proj 'ProjectSettings\ProjectVersion.txt'
+$version = (Select-String -LiteralPath $versionFile -Pattern '^m_EditorVersion: (.+)$').Matches[0].Groups[1].Value
+$editor = "C:\Program Files\Unity\Hub\Editor\$version\Editor\Unity.exe"
 
-if (-not (Test-Path $editor)) { throw "Unity editor not found: $editor (check ProjectSettings/ProjectVersion.txt)" }
+if (-not (Test-Path $editor)) { throw "Unity editor not found: $editor (install the version in ProjectSettings/ProjectVersion.txt)" }
 
-Start-Process -FilePath $editor -ArgumentList '-projectPath', $proj
+Start-Process -FilePath $editor -ArgumentList "-projectPath `"$proj`""
 Write-Output "unity-launched: $proj"

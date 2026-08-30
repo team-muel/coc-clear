@@ -17,8 +17,10 @@ $env:ALLUSERSPROFILE = 'C:\ProgramData'
 $env:ProgramData     = 'C:\ProgramData'
 $env:TMP             = $env:TEMP
 
-$editor  = 'C:\Program Files\Unity\Hub\Editor\6000.3.19f1\Editor\Unity.exe'
 $proj    = Split-Path -Parent $PSScriptRoot
+$versionFile = Join-Path $proj 'ProjectSettings\ProjectVersion.txt'
+$version = (Select-String -LiteralPath $versionFile -Pattern '^m_EditorVersion: (.+)$').Matches[0].Groups[1].Value
+$editor  = "C:\Program Files\Unity\Hub\Editor\$version\Editor\Unity.exe"
 $results = Join-Path $proj '_scratch\editmode-results.xml'
 $log     = Join-Path $proj '_scratch\editmode.log'
 
@@ -29,14 +31,16 @@ if (Get-Process Unity -ErrorAction SilentlyContinue) {
     throw 'Unity editor is running. Close it first (single project lock).'
 }
 
+if (-not (Test-Path $editor)) {
+    throw "Unity editor not found: $editor (install the version in ProjectSettings/ProjectVersion.txt)"
+}
+
 # Unity.exe is a GUI-subsystem binary: `& $editor ...` returns IMMEDIATELY and
 # leaves $LASTEXITCODE empty, so the gate "fails" before Unity has even started.
 # Start-Process -Wait -PassThru is the only shape that actually blocks. (Playbook H1)
-$unityArgs = @(
-    '-batchmode', '-projectPath', $proj,
-    '-runTests', '-testPlatform', 'EditMode',
-    '-testResults', $results, '-logFile', $log
-)
+# Start-Process flattens an argument array without preserving quotes on Windows
+# PowerShell. Project paths contain spaces, so build one correctly quoted line.
+$unityArgs = "-batchmode -projectPath `"$proj`" -runTests -testPlatform EditMode -testResults `"$results`" -logFile `"$log`""
 $p = Start-Process -FilePath $editor -ArgumentList $unityArgs -Wait -PassThru -NoNewWindow
 $code = $p.ExitCode
 
