@@ -36,5 +36,16 @@ namespace CocClear.Tests
             Assert.AreEqual("안내 방송", sequence.Current.Speaker);
             Assert.IsTrue(sequence.Current.Text.Contains("대피"));
         }
+
+        [Test]
+        public void Archive_ContainsEveryPrologueLine()
+        {
+            var records = ScenarioArchive.CreateAll();
+
+            Assert.AreEqual(PrologueScript.Create().Length, records.Length);
+            Assert.AreEqual("프롤로그 · 잔향의 도시", records[0].EpisodeTitle);
+            Assert.AreEqual(1, records[0].Order);
+            Assert.AreEqual("나", records[0].Line.Speaker);
+        }
     }
 }
