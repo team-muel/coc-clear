@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CocClear.Core;
 using NUnit.Framework;
 
@@ -88,6 +89,16 @@ namespace CocClear.Tests
             Assert.AreEqual("corridor-crowd", lines[20].SceneId);
             Assert.AreEqual(SceneTransitionStyle.FastBottomToTop, lines[7].SceneTransition);
             Assert.AreEqual(SceneTransitionStyle.FastBottomToTop, lines[20].SceneTransition);
+        }
+
+        [Test]
+        public void Archive_EpisodeCatalogCannotBeMutatedByConsumers()
+        {
+            var mutableView = ScenarioArchive.EpisodeTitles as IList<string>;
+
+            Assert.IsNotNull(mutableView);
+            Assert.Throws<System.NotSupportedException>(() => mutableView[0] = "변조");
+            Assert.AreEqual("프롤로그", ScenarioArchive.EpisodeTitles[0]);
         }
 
         [Test]
