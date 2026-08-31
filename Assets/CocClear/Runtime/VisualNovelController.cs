@@ -621,8 +621,8 @@ namespace CocClear.Runtime
         private void DrawArchiveRecords(float left, float width)
         {
             const float episodeButtonGap = 8f;
-            var episodeButtonWidth = (width - (episodeButtonGap * (ScenarioArchive.EpisodeTitles.Length - 1))) / ScenarioArchive.EpisodeTitles.Length;
-            for (var i = 0; i < ScenarioArchive.EpisodeTitles.Length; i++)
+            var episodeButtonWidth = (width - (episodeButtonGap * (ScenarioArchive.EpisodeTitles.Count - 1))) / ScenarioArchive.EpisodeTitles.Count;
+            for (var i = 0; i < ScenarioArchive.EpisodeTitles.Count; i++)
             {
                 var episodeTitle = ScenarioArchive.EpisodeTitles[i];
                 var episodeRect = new Rect(left + (episodeButtonWidth + episodeButtonGap) * i, 220f, episodeButtonWidth, 34f);
