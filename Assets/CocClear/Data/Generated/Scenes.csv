@@ -1,0 +1,4 @@
+id,backgroundResource,defaultTransition
+bedroom,Backgrounds/PrologueBedroom,None
+corridor,Backgrounds/CleanCorridor,FastBottomToTop
+corridor-crowd,Backgrounds/CleanCorridor,FastBottomToTop
