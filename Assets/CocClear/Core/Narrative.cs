@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace CocClear.Core
 {
@@ -138,13 +139,15 @@ namespace CocClear.Core
     /// <summary>Single source for every scenario record shown in the in-game archive.</summary>
     public static class ScenarioArchive
     {
-        public static readonly string[] EpisodeTitles =
+        private static readonly IReadOnlyList<string> episodeTitles = Array.AsReadOnly(new[]
         {
             "프롤로그",
             "1장",
             "2장",
             "3장",
-        };
+        });
+
+        public static IReadOnlyList<string> EpisodeTitles => episodeTitles;
 
         public static ArchiveRecord[] CreateAll()
         {
