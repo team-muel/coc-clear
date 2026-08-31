@@ -4,6 +4,8 @@ Excel (authoring) → validated CSV (committed) → Unity thin loader.
 
 Design + type-index + dispatch model live in the design vault: `CoC-Clear/50 Dispatch Assembly.md`.
 
+The active bootstrap contract contains `Characters`, `Scenes`, and `Episodes`. IDs are stable serialization keys; Unity resource paths are binding data, not identity.
+
 ## Layout
 
 - `Assets/CocClear/Data/Source/CocClear_GameData.xlsx` — authoring source of truth.

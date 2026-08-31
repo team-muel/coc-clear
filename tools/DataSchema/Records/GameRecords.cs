@@ -1,34 +1,34 @@
 // CoC-Clear static-data SCHEMA — single source of truth.
-//
-// Consumed by the Sdp CLIs (StaticDataHeaderGenerator + ExcelColumnExtractor) at
-// BUILD TIME to (a) generate/sync Excel headers and (b) extract + validate
-// Excel -> CSV. This file targets modern .NET and is NOT compiled into Unity.
-// Unity reads the resulting validated CSV via a thin loader.
-//
-// One record == one Excel sheet row.
-//   [StaticDataRecord(file, sheet)]  binds the record to a workbook sheet.
-//   [ColumnName("camelCase")]        pins the header. The record conforms to the
-//                                    CSV contract, never the reverse.
-//   [Range]                          validated at extract AND at load.
-//   [NullString("")]                 empty cell means null (required on nullable).
-//
-// Column change = edit here. The extractor then fails loudly if Excel drifts.
-//
-// STATUS: placeholder. The game's domain is not decided yet (see vault ledger A1).
-// The record below exists so the pipeline is exercised end-to-end from day one.
-// Replace it — don't build around it.
+// Consumed by the Sdp host CLIs at build time. This file is not compiled by Unity.
+// Stable IDs are serialized contracts; Unity resource paths are resolved by the thin loader.
 
 using Sdp.Attributes;
 
 namespace CocClear.DataSchema
 {
-    public enum Rarity { Common, Rare, Epic }
+    public enum SceneTransitionStyle
+    {
+        None,
+        FastBottomToTop,
+    }
 
-    [StaticDataRecord("CocClear_GameData", "Items")]
-    public sealed record ItemRecord(
+    [StaticDataRecord("CocClear_GameData", "Characters")]
+    public sealed record CharacterRecord(
         [ColumnName("id")] string Id,
         [ColumnName("displayName")] string DisplayName,
-        [ColumnName("rarity")] Rarity Rarity,
-        [ColumnName("price")][Range(0, 1_000_000)] int Price,
-        [ColumnName("description")][NullString("")] string? Description);
+        [ColumnName("defaultExpressionId")] string DefaultExpressionId,
+        [ColumnName("portraitResource")] string PortraitResource);
+
+    [StaticDataRecord("CocClear_GameData", "Scenes")]
+    public sealed record SceneRecord(
+        [ColumnName("id")] string Id,
+        [ColumnName("backgroundResource")] string BackgroundResource,
+        [ColumnName("defaultTransition")] SceneTransitionStyle DefaultTransition);
+
+    [StaticDataRecord("CocClear_GameData", "Episodes")]
+    public sealed record EpisodeRecord(
+        [ColumnName("id")] string Id,
+        [ColumnName("displayName")] string DisplayName,
+        [ColumnName("order")][Range(0, 999)] int Order,
+        [ColumnName("scriptId")] string ScriptId);
 }
